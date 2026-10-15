@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>あなたの火種を見つける3分ワーク</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow column, one screen at a time (intro, 7 questions, result). The ember progress line and the result name are the only strong colour. */
+:root {
+  --bg: #ECEEF1;
+  --surface: #F7F8F9;
+  --fg: #1A1E2A;
+  --muted: #566073;
+  --line: #CDD2DA;
+  --ember: #B3361F;
+  --ember-soft: #F1DDD7;
+  --on-ember: #FFFFFF;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E111A;
+    --surface: #161A26;
+    --fg: #E9E7E3;
+    --muted: #9AA3B5;
+    --line: #2B3243;
+    --ember: #F08A4B;
+    --ember-soft: #2E2420;
+    --on-ember: #1A1006;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E111A;
+  --surface: #161A26;
+  --fg: #E9E7E3;
+  --muted: #9AA3B5;
+  --line: #2B3243;
+  --ember: #F08A4B;
+  --ember-soft: #2E2420;
+  --on-ember: #1A1006;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.9;
+  padding-block: 20px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 36rem; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+.brand { display: inline-flex; align-items: center; gap: 8px; }
+.brand svg { width: 16px; height: 16px; fill: var(--ember); }
+#count { font-variant-numeric: tabular-nums; }
+
+.track { height: 2px; background: var(--line); position: relative; }
+.fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ember); transition: width .45s ease; }
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; line-height: 1.5; }
+h1 { font-size: clamp(1.7rem, 7vw, 2.2rem); }
+h2 { font-size: clamp(1.25rem, 5vw, 1.5rem); }
+h3 { font-size: 1.05rem; letter-spacing: .06em; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
+
+section { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .18em; color: var(--muted); }
+.lead { color: var(--fg); }
+.muted { color: var(--muted); font-size: 14px; }
+
+/* four fires preview */
+.fires { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.fires li { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.fires .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; line-height: 1.5; }
+.fires .nm rt { font-size: .5em; font-weight: 500; color: var(--muted); }
+.fires .kw { font-size: 13px; color: var(--muted); }
+
+.btn {
+  font: inherit; font-weight: 700; letter-spacing: .08em; cursor: pointer;
+  background: var(--ember); color: var(--on-ember); border: 1px solid var(--ember);
+  padding: 14px 24px; border-radius: 2px; text-align: center; text-decoration: none; display: inline-block; align-self: flex-start;
+}
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); font-weight: 500; }
+.btn.ghost:hover { border-color: var(--fg); filter: none; }
+.link { font: inherit; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 6px 0; align-self: flex-start; text-decoration: underline; text-underline-offset: 4px; }
+.link:hover { color: var(--fg); }
+
+/* question */
+.q-text { min-height: 3em; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  font: inherit; text-align: left; cursor: pointer; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 2px;
+  padding: 14px 16px; display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 8px; align-items: baseline; line-height: 1.7;
+}
+.opt .mk { font-family: var(--font-display); font-weight: 700; color: var(--muted); }
+.opt:hover { border-color: var(--fg); }
+.opt[aria-pressed="true"] { border-color: var(--ember); background: var(--ember-soft); }
+.opt[aria-pressed="true"] .mk { color: var(--ember); }
+
+/* result */
+.name { font-family: var(--font-display); font-weight: 700; font-size: clamp(3rem, 16vw, 4.5rem); line-height: 1.3; color: var(--ember); margin: 0; }
+.name rt { font-size: .22em; font-weight: 500; color: var(--muted); letter-spacing: .2em; }
+.tag { font-family: var(--font-display); font-size: 1.15rem; line-height: 1.7; }
+.mix { display: flex; flex-direction: column; gap: 10px; padding: 18px 16px; background: var(--surface); border: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr) 2.6rem; gap: 12px; align-items: center; font-size: 14px; }
+.row .bar { height: 8px; background: var(--line); position: relative; }
+.row .bar i { position: absolute; inset: 0 auto 0 0; background: var(--muted); opacity: .55; }
+.row.main .bar i { background: var(--ember); opacity: 1; }
+.row.main .lb { font-weight: 700; color: var(--ember); }
+.row .v { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.list li { padding-left: 1.2em; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: .9em; width: .5em; height: 1px; background: var(--ember); }
+.block { display: flex; flex-direction: column; gap: 10px; }
+.step { padding: 18px 16px; border: 1px solid var(--ember); display: flex; flex-direction: column; gap: 6px; }
+.step .eyebrow { color: var(--ember); }
+.work { display: flex; flex-direction: column; gap: 10px; padding-top: 24px; border-top: 1px solid var(--line); }
+textarea {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 2px;
+  padding: 12px 14px; width: 100%; min-height: 6.5rem; resize: vertical; line-height: 1.8;
+}
+textarea::placeholder { color: var(--muted); opacity: .8; }
+.share { display: flex; flex-direction: column; gap: 10px; }
+.share textarea { min-height: 5.2rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.status { font-size: 13px; color: var(--muted); }
+.line-cta { padding: 20px 16px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+footer { font-size: 12px; color: var(--muted); letter-spacing: .14em; padding-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+@media (max-width: 420px) { .row { grid-template-columns: 3.6rem minmax(0, 1fr) 2.4rem; gap: 8px; } }
+</style>
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <span class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c.6 3.6 5 5.6 5 10.6a5 5 0 0 1-10 0c0-2 .9-3.4 2.2-4.6 0 1.9.9 3 2 3-.2-3.8-.8-6.2.8-9z"/></svg>火種ワーク</span>
+    <span id="count" aria-live="polite"></span>
+  </header>
+  <div class="track" id="track" hidden><div class="fill" id="fill"></div></div>
+
+  <main>
+    <section id="s-intro">
+      <div class="block">
+        <p class="eyebrow">『消えなかった火種』読者のみなさまへ</p>
+        <h1 id="h-intro" tabindex="-1">あなたの火種を見つける3分ワーク</h1>
+      </div>
+      <p class="lead">7つの質問に、考えすぎず、直感で答えてください。ひとつ選ぶたびに次へ進みます。終わると、あなたの火種が四つの火のどれに近いかが分かります。</p>
+      <ul class="fires" id="fires-preview"></ul>
+      <button class="btn" id="start" type="button">はじめる</button>
+      <p class="muted">所要時間は約3分です。正解はありません。</p>
+    </section>
+
+    <section id="s-q" hidden>
+      <h2 class="q-text" id="q-text" tabindex="-1"></h2>
+      <div class="opts" id="opts"></div>
+      <button class="link" id="back" type="button">ひとつ前の質問へ戻る</button>
+    </section>
+
+    <section id="s-result" hidden>
+      <div class="block">
+        <p class="eyebrow">あなたの火種</p>
+        <h2 class="name" id="r-name" tabindex="-1"></h2>
+        <p class="tag" id="r-tag"></p>
+      </div>
+      <div class="mix" id="r-mix" aria-label="四つの火の配合"></div>
+      <p id="r-desc"></p>
+      <div class="block"><h3>火がともる瞬間</h3><ul class="list" id="r-moments"></ul></div>
+      <div class="block"><h3>火を絶やさないコツ</h3><ul class="list" id="r-tips"></ul></div>
+      <div class="step"><p class="eyebrow">今日の小さな一歩</p><p id="r-step"></p></div>
+      <p id="r-sub"></p>
+
+      <div class="work">
+        <h3>ワーク　火がともった瞬間を書き出す</h3>
+        <p class="muted">最近、時間を忘れた出来事や、胸が少し熱くなった場面をひとつ書いてみましょう。この端末に残ります。</p>
+        <label for="memo" class="muted">メモ</label>
+        <textarea id="memo" placeholder="例：先週、友人の話を聞いていて、気づけば二時間たっていた。"></textarea>
+      </div>
+
+      <div class="line-cta" id="line-cta" hidden>
+        <h3>公式LINE</h3>
+        <p>つきかげくろをからの新しいお知らせを、公式LINEで受け取れます。</p>
+        <a class="btn" id="line-link" href="#" target="_blank" rel="noopener">公式LINEを見る</a>
+      </div>
+
+      <div class="share">
+        <h3>結果を誰かに伝える</h3>
+        <label for="share" class="muted">コピーして使える文章</label>
+        <textarea id="share" readonly></textarea>
+        <div class="actions">
+          <button class="btn ghost" id="copy" type="button">文章をコピー</button>
+          <span class="status" id="copy-status" role="status"></span>
+        </div>
+      </div>
+
+      <button class="link" id="retry" type="button">もう一度やってみる</button>
+    </section>
+  </main>
+
+  <footer>つきかげくろを</footer>
+</div>
+
+<script>
+// 公式LINEのURLが決まったらここに入れると、結果画面に案内が表示されます。
+var LINE_URL = "";
+
+var FIRES = {
+  kama: {
+    name: "窯火", rt: "かまび", kw: "つくる火",
+    tag: "手を動かすほど、火が強くなる。",
+    desc: "あなたの火種は、形にすることでともる火です。頭の中にあるものを、文章や絵や料理や段取りとして外に出したとき、いちばん強く燃えます。完成した瞬間の手応えが、次の一歩の燃料になります。",
+    moments: ["手元に素材と道具が揃っているとき", "昨日より少し形になった、と感じたとき", "作ったものを、誰かが手に取ってくれたとき"],
+    tips: ["完成度より先に、小さく形にして外に出す。", "作る時間を、予定表へ先に書き込んでおく。"],
+    step: "今日、5分だけ手を動かして、ひとつ小さなものを作ってみる。"
+  },
+  taki: {
+    name: "焚き火", rt: "たきび", kw: "つなぐ火",
+    tag: "人が集まるほど、火があたたかくなる。",
+    desc: "あなたの火種は、人と分かち合うことで燃え広がる火です。ひとりで抱え込むより、誰かと話し、笑い、同じ時間を囲んだときに力が出ます。場を温める人として、まわりから頼られていることも多いはずです。",
+    moments: ["気心の知れた人と、とりとめなく話しているとき", "誰かの『いいな』と思う話に出会ったとき", "集まりの終わりに、いい時間だったと言われたとき"],
+    tips: ["ひとりで悩む前に、信頼できる人へ一言投げてみる。", "火を囲む相手は、少人数に決めておく。"],
+    step: "最近会えていない人に、短い近況メッセージを一通送る。"
+  },
+  tomo: {
+    name: "灯火", rt: "ともしび", kw: "ともす火",
+    tag: "誰かの足元が明るくなると、自分も明るい。",
+    desc: "あなたの火種は、誰かの足元を照らすことでともる火です。相手の言葉の奥にある気持ちに気づき、必要なときにそっと隣に立てる人です。「ありがとう」と言われた記憶が、あなたを何度も立ち上がらせてきました。",
+    moments: ["誰かの話を、最後まで聞けたとき", "自分の経験が、誰かの助けになったとき", "静かな場所で、ひとりの時間を大切にできているとき"],
+    tips: ["人を照らす前に、自分の灯りの油を切らさない。", "助けた経験は、短い言葉にして残しておく。"],
+    step: "今日あった、人に感謝された出来事をひとつ書き出す。"
+  },
+  oki: {
+    name: "熾火", rt: "おきび", kw: "ほりさげる火",
+    tag: "静かに熱をためて、深く届く。",
+    desc: "あなたの火種は、外から見えなくても内側で熱を保ち続ける火です。気になったことを深く掘り下げ、納得できるまで手放しません。その蓄積が、あるとき誰かの役に立つ知識や視点になります。",
+    moments: ["ひとつのテーマに、まとまった時間を使えているとき", "ばらばらだった知識が、つながったとき", "自分だけの視点を見つけたとき"],
+    tips: ["調べたことは、人に説明するつもりで一枚にまとめる。", "深く掘る時間と、外に出す時間を分けておく。"],
+    step: "最近いちばん気になっていることを、一行で書き出す。"
+  }
+};
+var ORDER = ["kama", "taki", "tomo", "oki"];
+
+var QS = [
+  { q: "時間を忘れて没頭していたのは、どんなときでしたか。", o: [
+    ["誰かと話し込んで、気づけば外が暗かった", "taki"],
+    ["ひとつのことを調べ続けて、気づけば夜だった", "oki"],
+    ["何かを作っていて、手が止まらなかった", "kama"],
+    ["誰かの相談に乗っていて、長い時間が過ぎていた", "tomo"] ] },
+  { q: "休日に、ふと始めたくなるのはどれですか。", o: [
+    ["気になるテーマの本や資料を読みふける", "oki"],
+    ["料理、工作、執筆など、何かを作る", "kama"],
+    ["友人や家族を誘って、どこかへ出かける", "taki"],
+    ["誰かのために、手伝いや差し入れを用意する", "tomo"] ] },
+  { q: "心がふるえた瞬間に、いちばん近いのはどれですか。", o: [
+    ["長年の疑問が、ひとつにつながったとき", "oki"],
+    ["「ありがとう、助かった」と言われたとき", "tomo"],
+    ["思い描いたものが、形になったとき", "kama"],
+    ["みんなで笑い合って、場がほどけたとき", "taki"] ] },
+  { q: "人から、よく頼まれることはどれですか。", o: [
+    ["「ちょっと聞いてくれる？」", "tomo"],
+    ["「これ、作ってもらえない？」", "kama"],
+    ["「あれって、どういうことだっけ？」", "oki"],
+    ["「幹事、お願いできる？」", "taki"] ] },
+  { q: "物語に触れて、いちばん心に残るのはどれですか。", o: [
+    ["登場人物どうしの、距離の変化", "taki"],
+    ["苦しい場面にさす、小さな光", "tomo"],
+    ["世界の成り立ちや、細かな設定", "oki"],
+    ["作り手の工夫や、手つき", "kama"] ] },
+  { q: "疲れて火が小さくなった日、取り戻す方法はどれですか。", o: [
+    ["手を動かして、何かを作る", "kama"],
+    ["ひとりで静かに、気になることに没頭する", "oki"],
+    ["人に会って、他愛ない話をする", "taki"],
+    ["誰かの役に立つことを、ひとつやる", "tomo"] ] },
+  { q: "十年後、こうなっていたら嬉しいのはどれですか。", o: [
+    ["手元に、自分の作ったものが積み上がっている", "kama"],
+    ["まわりに、人が自然と集まる場ができている", "taki"],
+    ["深く掘り下げたことが、誰かの宝になっている", "oki"],
+    ["誰かの人生の、支えのひとつになれている", "tomo"] ] }
+];
+var MARKS = ["ア", "イ", "ウ", "エ"];
+
+var $ = function (id) { return document.getElementById(id); };
+var idx = 0, answers = [], current = null;
+var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function nameHtml(k) { var f = FIRES[k]; return "<ruby>" + f.name + "<rt>" + f.rt + "</rt></ruby>"; }
+
+function screen(id, focusId) {
+  ["s-intro", "s-q", "s-result"].forEach(function (s) { $(s).hidden = (s !== id); });
+  $("track").hidden = (id !== "s-q");
+  $("count").textContent = (id === "s-q") ? "Q" + (idx + 1) + " / " + QS.length : "";
+  window.scrollTo(0, 0);
+  var el = $(focusId); if (el) el.focus({ preventScroll: true });
+}
+
+function renderPreview() {
+  $("fires-preview").innerHTML = ORDER.map(function (k) {
+    return '<li><span class="nm">' + nameHtml(k) + '</span><span class="kw">' + FIRES[k].kw + "</span></li>";
+  }).join("");
+}
+
+function showQ() {
+  var item = QS[idx];
+  $("q-text").textContent = item.q;
+  $("fill").style.width = (idx / QS.length * 100) + "%";
+  $("back").hidden = (idx === 0);
+  var html = item.o.map(function (o, i) {
+    var on = answers[idx] === o[1];
+    return '<button type="button" class="opt" data-k="' + o[1] + '" aria-pressed="' + on + '"><span class="mk">' + MARKS[i] + "</span><span>" + o[0] + "</span></button>";
+  }).join("");
+  $("opts").innerHTML = html;
+  screen("s-q", "q-text");
+}
+
+function pick(k, btn) {
+  answers[idx] = k;
+  Array.prototype.forEach.call($("opts").children, function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+  setTimeout(function () {
+    if (idx < QS.length - 1) { idx++; showQ(); } else { finish(); }
+  }, reduce ? 0 : 260);
+}
+
+function score() {
+  var s = { kama: 0, taki: 0, tomo: 0, oki: 0 };
+  answers.forEach(function (k) { s[k]++; });
+  var rank = ORDER.slice().sort(function (a, b) {
+    var ba = (answers[answers.length - 1] === a) ? 0.5 : 0;
+    var bb = (answers[answers.length - 1] === b) ? 0.5 : 0;
+    return (s[b] + bb) - (s[a] + ba);
+  });
+  return { s: s, rank: rank };
+}
+
+function finish() {
+  $("fill").style.width = "100%";
+  var r = score(), main = r.rank[0], sub = r.rank[1], f = FIRES[main];
+  current = main;
+  $("r-name").innerHTML = nameHtml(main);
+  $("r-tag").textContent = f.tag;
+  $("r-desc").textContent = f.desc;
+  $("r-moments").innerHTML = f.moments.map(function (t) { return "<li>" + t + "</li>"; }).join("");
+  $("r-tips").innerHTML = f.tips.map(function (t) { return "<li>" + t + "</li>"; }).join("");
+  $("r-step").textContent = f.step;
+  $("r-mix").innerHTML = r.rank.map(function (k) {
+    var n = r.s[k];
+    return '<div class="row' + (k === main ? " main" : "") + '"><span class="lb">' + FIRES[k].name + '</span><span class="bar"><i style="width:' + (n / QS.length * 100) + '%"></i></span><span class="v">' + n + " / " + QS.length + "</span></div>";
+  }).join("");
+  $("r-sub").innerHTML = "二番目に強い火は「" + FIRES[sub].name + "」（" + FIRES[sub].kw + "）です。" + f.name + "の火が弱った日は、こちらの火で温まり直せます。";
+  $("share").value = "『消えなかった火種』のワークで、わたしの火種は「" + f.name + "（" + f.rt + "）」でした。" + f.tag + "\n#消えなかった火種 #あなたの火種を見つける3分ワーク #つきかげくろを";
+  $("copy-status").textContent = "";
+  if (LINE_URL) { $("line-link").setAttribute("href", LINE_URL); $("line-cta").hidden = false; }
+  screen("s-result", "r-name");
+}
+
+$("start").addEventListener("click", function () { idx = 0; answers = []; showQ(); });
+$("opts").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest(".opt") : null;
+  if (b) pick(b.getAttribute("data-k"), b);
+});
+$("back").addEventListener("click", function () { if (idx > 0) { idx--; showQ(); } });
+$("retry").addEventListener("click", function () { idx = 0; answers = []; $("fill").style.width = "0"; screen("s-intro", "h-intro"); });
+
+$("copy").addEventListener("click", function () {
+  var ta = $("share"), st = $("copy-status");
+  function fallback() { ta.focus(); ta.select(); st.textContent = "文章を選択しました。コピーしてお使いください。"; }
+  try {
+    navigator.clipboard.writeText(ta.value).then(function () { st.textContent = "コピーしました。"; }, fallback);
+  } catch (err) { fallback(); }
+});
+
+var memo = $("memo");
+try { var saved = localStorage.getItem("hidane-memo"); if (saved) memo.value = saved; } catch (e) {}
+memo.addEventListener("input", function () { try { localStorage.setItem("hidane-memo", memo.value); } catch (e) {} });
+
+renderPreview();
+</script>
+
+</body>
+</html>
